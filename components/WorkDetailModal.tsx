@@ -120,7 +120,7 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
                    </div>
                 </section>
 
-                <section className="bg-white/5 p-6 md:p-10 border-l-2 border-[#00f2ff]">
+                {/* <section className="bg-white/5 p-6 md:p-10 border-l-2 border-[#00f2ff]">
                    <div className="flex items-center gap-3 mb-6">
                       <div className="w-2 h-2 bg-[#00f2ff] rounded-full animate-ping"></div>
                       <span className="text-[10px] font-black text-[#00f2ff] uppercase tracking-widest">AI 创作洞察</span>
@@ -136,7 +136,7 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
                        <span className="inline-block w-2 h-4 bg-[#00f2ff] ml-1 animate-pulse"></span>
                      </p>
                    )}
-                </section>
+                </section> */}
              </div>
 
              {onDelete && onEdit && (
