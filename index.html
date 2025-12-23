@@ -22,7 +22,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* 移动端优化的扫描线 */
         body::after {
             content: "";
             position: fixed;
@@ -64,31 +63,20 @@
             100% { transform: translate(10%, 10%) rotate(10deg); }
         }
 
-        /* 移动端入场动画 */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         .text-glow {
             text-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
         }
 
-        /* 隐藏滚动条但保持功能 */
         ::-webkit-scrollbar { display: none; }
     </style>
 <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3"
+    "react": "https://esm.sh/react@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
@@ -98,6 +86,10 @@
     <div class="gradient-bg"></div>
     <div class="orb" style="top: -50vw; left: -50vw;"></div>
     <div class="orb" style="bottom: -50vw; right: -50vw; background: radial-gradient(circle, rgba(0, 242, 255, 0.05) 0%, transparent 70%);"></div>
+    
     <div id="root"></div>
+
+    <!-- 关键修复：显式引入 index.tsx 作为 ES 模块入口 -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>
