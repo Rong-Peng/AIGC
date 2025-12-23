@@ -258,7 +258,7 @@ const App: React.FC = () => {
               >
                 &times;
               </button>
-              <div className="text-[#00f2ff] font-mono text-[10px] mb-4 animate-pulse">>>> 身份认证序列已初始化...</div>
+              <div className="text-[#00f2ff] font-mono text-[10px] mb-4 animate-pulse">&gt;&gt;&gt; 身份认证序列已初始化...</div>
               <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8">系统权限控制</h2>
               <form onSubmit={handleLogin}>
                 <input 
