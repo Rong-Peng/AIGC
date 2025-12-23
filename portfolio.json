@@ -1,2 +1,24 @@
-
-[]
+[
+  {
+    "id": "1766498706157",
+    "title": "美丽包包",
+    "description": "电商包包",
+    "mediaType": "image",
+    "mediaUrl": "./assets/Gemini_Generated_Image_egv3myegv3myegv3.jpg",
+    "tools": [
+      "gemini"
+    ],
+    "createdAt": 1766498706157
+  },
+  {
+    "id": "1766498465459",
+    "title": "风景不在取景框里",
+    "description": "在一个被像素精准定义的时代，我们习惯了在 6.1 英寸的屏幕里环游世界。本作以“数字时代的身体力行”为核心命题，探讨了一个悖论：如果风景早已在别人的镜头里完美定格，我们为何还要亲自出发？",
+    "mediaType": "video",
+    "mediaUrl": "【风景不在取景框里】 https://www.bilibili.com/video/BV1tQBMBPECe/?share_source=copy_web&vd_source=7f737ba9767ecfe23dc684ebf7425a5d",
+    "tools": [
+      "即梦，Runway，海螺"
+    ],
+    "createdAt": 1766498465459
+  }
+]
