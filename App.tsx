@@ -28,6 +28,7 @@ const App: React.FC = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [scrollY, setScrollY] = useState(0);
+  const [showSyncGuide, setShowSyncGuide] = useState(false);
   
   const longPressTimer = useRef<number | null>(null);
 
@@ -37,9 +38,25 @@ const App: React.FC = () => {
     
     const loadWorks = async () => {
       try {
-        const localData = await getAllWorksFromDB();
-        const allWorksMap = new Map();
+        const allWorksMap = new Map<string, PortfolioWork>();
+        
+        // 1. 加载代码内置的预设作品 (Fallback)
         PRESET_WORKS.forEach(w => allWorksMap.set(w.id, w));
+
+        // 2. 尝试抓取仓库中的 portfolio.json (方案1：全网同步核心)
+        try {
+          const response = await fetch('./portfolio.json');
+          if (response.ok) {
+            const remoteData: PortfolioWork[] = await response.json();
+            remoteData.forEach(w => allWorksMap.set(w.id, w));
+            console.log("已同步远程作品集数据");
+          }
+        } catch (e) {
+          console.warn("未检测到外部 portfolio.json 或读取失败，将使用内置及本地数据");
+        }
+
+        // 3. 加载浏览器本地数据库中的作品 (当前正在编辑的)
+        const localData = await getAllWorksFromDB();
         localData.forEach(w => allWorksMap.set(w.id, w));
         
         const combined = Array.from(allWorksMap.values())
@@ -47,7 +64,7 @@ const App: React.FC = () => {
           
         setWorks(combined);
       } catch (err) {
-        console.error("数据加载失败:", err);
+        console.error("数据加载流程异常:", err);
       } finally {
         setIsLoading(false);
       }
@@ -72,7 +89,6 @@ const App: React.FC = () => {
         }
         return [work, ...prev];
       });
-      // 如果当前正在查看这个作品，同步更新详情
       if (selectedWork?.id === work.id) {
         setSelectedWork(work);
       }
@@ -96,9 +112,9 @@ const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `portfolio_data_${Date.now()}.json`;
+    link.download = `portfolio.json`;
     link.click();
-    alert("数据已导出为 JSON 文件。请将其内容粘贴到 services/staticData.ts 中以实现永久共享。");
+    setShowSyncGuide(true);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -151,15 +167,15 @@ const App: React.FC = () => {
             <div className="flex gap-2">
               <button 
                 onClick={handleExport}
-                className="text-[10px] font-black text-[#00f2ff] border border-[#00f2ff]/30 tracking-widest px-4 py-1.5 rounded-sm hover:bg-[#00f2ff]/10 transition-all"
+                className="text-[10px] font-black text-[#00f2ff] border border-[#00f2ff]/30 tracking-widest px-4 py-1.5 rounded-sm hover:bg-[#00f2ff]/10 transition-all flex items-center gap-2"
               >
-                导出配置
+                <span className="animate-pulse">●</span> 同步全网
               </button>
               <button 
                 onClick={() => setIsUploadOpen(true)} 
                 className="text-[10px] font-black text-black bg-[#00f2ff] tracking-widest px-4 py-1.5 rounded-sm shadow-[0_0_15px_rgba(0,242,255,0.4)] transition-transform active:scale-90"
               >
-                添加作品
+                添加新作品
               </button>
             </div>
           )}
@@ -234,6 +250,34 @@ const App: React.FC = () => {
         )}
       </main>
 
+      {showSyncGuide && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
+           <div className="w-full max-w-2xl border border-[#00f2ff]/30 p-8 md:p-12 bg-[#0a0a0a] relative shadow-[0_0_100px_rgba(0,242,255,0.15)]">
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-6 text-[#00f2ff]">同步操作指引 (SYNC_LOG)</h2>
+              <div className="space-y-6 text-gray-300 font-light leading-relaxed text-sm md:text-base mb-10">
+                <div className="p-4 bg-white/5 border-l-2 border-white/20">
+                  <p className="text-xs font-mono text-gray-500 mb-2">STEP_01</p>
+                  <p>将刚下载的 <code className="text-[#00f2ff]">portfolio.json</code> 放置在你的项目根目录中。</p>
+                </div>
+                <div className="p-4 bg-white/5 border-l-2 border-white/20">
+                  <p className="text-xs font-mono text-gray-500 mb-2">STEP_02</p>
+                  <p>提交该文件变更并重新推送代码（GitHub Push 或 Vercel Deploy）。</p>
+                </div>
+                <div className="p-4 bg-[#00f2ff]/5 border-l-2 border-[#00f2ff]">
+                  <p className="text-xs font-mono text-[#00f2ff] mb-2">DONE</p>
+                  <p>部署完成后，所有人访问该链接都能看到你刚刚发布的媒体作品。</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowSyncGuide(false)}
+                className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-[#00f2ff] transition-colors"
+              >
+                确认并继续
+              </button>
+           </div>
+        </div>
+      )}
+
       <footer className="p-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
          <div className="text-[10px] font-mono text-gray-600 tracking-widest flex items-center gap-4">
            <span>© 2024 智感画布 (NEURAL_CANVAS)</span>
@@ -241,11 +285,11 @@ const App: React.FC = () => {
              onClick={() => setShowLogin(true)} 
              className="opacity-10 hover:opacity-100 transition-opacity cursor-help"
            >
-             [管理员入口]
+             [系统控制台]
            </button>
          </div>
          <div className="flex gap-8">
-            <span className="text-[10px] font-bold text-white/10 uppercase">架构方案: 混合本地云 + 静态持久化</span>
+            <span className="text-[10px] font-bold text-white/10 uppercase italic">架构方案: DATA_HYBRID (JSON + INDEXED_DB)</span>
          </div>
       </footer>
 
@@ -259,7 +303,7 @@ const App: React.FC = () => {
                 &times;
               </button>
               <div className="text-[#00f2ff] font-mono text-[10px] mb-4 animate-pulse">&gt;&gt;&gt; 身份认证序列已初始化...</div>
-              <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8">系统权限控制</h2>
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8">管理员登录</h2>
               <form onSubmit={handleLogin}>
                 <input 
                   type="password" autoFocus
@@ -269,8 +313,8 @@ const App: React.FC = () => {
                   onChange={e => setPasswordInput(e.target.value)}
                 />
                 <div className="flex justify-between items-center">
-                   <button type="button" onClick={() => setShowLogin(false)} className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-white">中止操作</button>
-                   <button type="submit" className="bg-[#00f2ff] text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform">验证身份</button>
+                   <button type="button" onClick={() => setShowLogin(false)} className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-white">取消</button>
+                   <button type="submit" className="bg-[#00f2ff] text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform">验证</button>
                 </div>
               </form>
            </div>
@@ -286,7 +330,6 @@ const App: React.FC = () => {
         />
       )}
       
-      {/* 上传/编辑 弹窗 */}
       {(isUploadOpen || editingWork) && (
         <UploadModal 
           initialWork={editingWork || undefined}
