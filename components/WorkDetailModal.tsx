@@ -39,11 +39,12 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
 
   if (!work) return null;
 
-  // 识别 B站链接并提取 BV 号
+  // 识别 B站链接并提取 BV 号，优化 embed 地址
   const getBilibiliEmbedUrl = (url: string) => {
     const bvMatch = url.match(/BV[a-zA-Z0-9]+/i);
     if (bvMatch) {
-      return `//player.bilibili.com/player.html?bvid=${bvMatch[0]}&page=1&high_quality=1&danmaku=0`;
+      // 显式添加 https: 协议，并设置 autoplay=0 防止部分浏览器策略拦截
+      return `https://player.bilibili.com/player.html?bvid=${bvMatch[0]}&page=1&high_quality=1&danmaku=0&autoplay=0`;
     }
     return null;
   };
@@ -70,7 +71,7 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
             <img src={work.mediaUrl} alt={work.title} className="max-h-full max-w-full object-contain shadow-[0_0_100px_rgba(0,242,255,0.05)]" />
           ) : (
             bvidUrl ? (
-              <div className="w-full aspect-video max-w-4xl shadow-2xl border border-white/5">
+              <div className="w-full aspect-video max-w-4xl shadow-2xl border border-white/5 bg-zinc-900">
                 <iframe 
                   src={bvidUrl} 
                   className="w-full h-full"
@@ -79,6 +80,9 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
                   frameBorder="no" 
                   framespacing="0" 
                   allowFullScreen={true}
+                  sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts allow-popups"
+                  referrerPolicy="no-referrer"
+                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 ></iframe>
               </div>
             ) : (

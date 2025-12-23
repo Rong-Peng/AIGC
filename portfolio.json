@@ -1,24 +1,21 @@
+
 [
   {
-    "id": "1766498706157",
-    "title": "美丽包包",
-    "description": "电商包包",
+    "id": "demo-1",
+    "title": "赛博朋克城市边缘",
+    "description": "这是一件使用 Midjourney 生成的作品。探索了霓虹灯光与雨后街道的质感融合，展现了 AI 对光影细节的极致捕捉。",
+    "mediaUrl": "https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=2000&auto=format&fit=crop",
     "mediaType": "image",
-    "mediaUrl": "./assets/Gemini_Generated_Image_egv3myegv3myegv3.jpg",
-    "tools": [
-      "gemini"
-    ],
-    "createdAt": 1766498706157
+    "tools": ["Midjourney", "Photoshop"],
+    "createdAt": 1700000000000
   },
   {
-    "id": "1766498465459",
-    "title": "风景不在取景框里",
-    "description": "在一个被像素精准定义的时代，我们习惯了在 6.1 英寸的屏幕里环游世界。本作以“数字时代的身体力行”为核心命题，探讨了一个悖论：如果风景早已在别人的镜头里完美定格，我们为何还要亲自出发？",
+    "id": "demo-2",
+    "title": "AI 情感表达测试",
+    "description": "通过 B 站托管的视频展示。这组动态视觉实验展示了算法生成的流体形态如何模拟人类的情绪起伏。",
+    "mediaUrl": "https://www.bilibili.com/video/BV1GJ411x7ba",
     "mediaType": "video",
-    "mediaUrl": "【风景不在取景框里】 https://www.bilibili.com/video/BV1tQBMBPECe/?share_source=copy_web&vd_source=7f737ba9767ecfe23dc684ebf7425a5d",
-    "tools": [
-      "即梦，Runway，海螺"
-    ],
-    "createdAt": 1766498465459
+    "tools": ["Stable Video Diffusion", "After Effects"],
+    "createdAt": 1700000000001
   }
 ]

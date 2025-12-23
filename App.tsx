@@ -27,29 +27,29 @@ const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
-  const [scrollY, setScrollY] = useState(0);
   const [showSyncGuide, setShowSyncGuide] = useState(false);
-  
-  const longPressTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    
     const loadWorks = async () => {
+      setIsLoading(true);
       try {
         const allWorksMap = new Map<string, PortfolioWork>();
         
+        // 1. 加载硬编码的静态预设
         PRESET_WORKS.forEach(w => allWorksMap.set(w.id, w));
 
+        // 2. 加载外部 JSON 文件 (增加时间戳防止缓存)
         try {
-          const response = await fetch('./portfolio.json');
+          const response = await fetch(`./portfolio.json?v=${Date.now()}`);
           if (response.ok) {
             const remoteData: PortfolioWork[] = await response.json();
             remoteData.forEach(w => allWorksMap.set(w.id, w));
           }
-        } catch (e) {}
+        } catch (e) {
+          console.warn("未找到 portfolio.json 或解析失败");
+        }
 
+        // 3. 加载本地 IndexedDB (管理员浏览器特有)
         const localData = await getAllWorksFromDB();
         localData.forEach(w => allWorksMap.set(w.id, w));
         
@@ -63,12 +63,11 @@ const App: React.FC = () => {
         setIsLoading(false);
       }
     };
+    
     loadWorks();
     
     const adminSession = localStorage.getItem('ultra_portfolio_admin') === 'true';
     setIsAdmin(adminSession);
-
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleUploadOrUpdate = async (work: PortfolioWork) => {
@@ -123,6 +122,14 @@ const App: React.FC = () => {
 
   const filteredWorks = works.filter(w => filter === 'all' || w.mediaType === filter);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="w-12 h-12 border-2 border-[#00f2ff] border-t-transparent animate-spin rounded-full"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen relative flex flex-col bg-[#050505]">
       <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-10 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
@@ -138,7 +145,7 @@ const App: React.FC = () => {
                 onClick={handleExport}
                 className="text-[10px] font-black text-[#00f2ff] border border-[#00f2ff]/30 tracking-widest px-4 py-1.5 rounded-sm hover:bg-[#00f2ff]/10"
               >
-                生成同步文件
+                导出数据
               </button>
               <button 
                 onClick={() => setIsUploadOpen(true)} 
@@ -149,10 +156,10 @@ const App: React.FC = () => {
             </div>
           )}
           <div 
-            className="w-10 h-10 md:w-12 md:h-12 bg-white/5 border border-white/10 p-0.5 rounded-sm overflow-hidden cursor-pointer"
+            className="w-10 h-10 md:w-12 md:h-12 bg-white/5 border border-white/10 p-0.5 rounded-sm overflow-hidden cursor-pointer flex items-center justify-center"
             onClick={() => isAdmin ? (setIsAdmin(false), localStorage.removeItem('ultra_portfolio_admin')) : setShowLogin(true)}
           >
-            <img src={profile.avatar} className={`w-full h-full object-cover ${isAdmin ? 'opacity-100' : 'opacity-30'}`} />
+            <img src={profile.avatar} className={`w-full h-full object-cover transition-opacity ${isAdmin ? 'opacity-100' : 'opacity-20 hover:opacity-40'}`} />
           </div>
         </div>
       </nav>
@@ -184,24 +191,28 @@ const App: React.FC = () => {
           {filteredWorks.map((work) => (
             <PortfolioCard key={work.id} work={work} onClick={setSelectedWork} />
           ))}
+          {filteredWorks.length === 0 && (
+            <div className="col-span-full py-20 text-center border border-dashed border-white/10">
+              <p className="text-gray-600 font-mono text-xs uppercase tracking-widest">暂无记录 / NO_DATA_FOUND</p>
+            </div>
+          )}
         </div>
       </main>
 
       {showSyncGuide && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
            <div className="w-full max-w-2xl border border-[#00f2ff]/30 p-8 md:p-12 bg-[#0a0a0a]">
-              <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-6 text-[#00f2ff]">全网同步成功第一步</h2>
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-6 text-[#00f2ff]">同步指南</h2>
               <div className="space-y-4 text-gray-300 text-sm mb-10">
-                <p>1. 刚才下载的 <code className="text-[#00f2ff]">portfolio.json</code> 已经包含了你的所有作品数据（包括 B站链接）。</p>
-                <p>2. 把这个文件放到你代码根目录下。</p>
-                <p>3. <span className="text-white font-bold">关于本地图片：</span> 如果你在 URL 里填的是 <code className="bg-white/10 px-1 italic">./assets/01.jpg</code>，请确保你手动创建了 <code className="text-[#00f2ff]">assets</code> 文件夹，并把对应的图片放进去。</p>
-                <p>4. 重新提交代码并部署，面试官就能飞速流畅地看你的作品集了！</p>
+                <p>1. 已下载最新的 <code className="text-[#00f2ff]">portfolio.json</code>。</p>
+                <p>2. 请将此文件放入你的 GitHub 仓库根目录覆盖旧文件。</p>
+                <p>3. 重新 Push 代码。由于浏览器缓存，部署后可能需要 **强刷网页** (Ctrl+F5) 才能看到新内容。</p>
               </div>
               <button 
                 onClick={() => setShowSyncGuide(false)}
                 className="w-full py-4 bg-white text-black font-black uppercase text-xs hover:bg-[#00f2ff]"
               >
-                好的
+                了解并关闭
               </button>
            </div>
         </div>
@@ -209,11 +220,11 @@ const App: React.FC = () => {
 
       {showLogin && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
-           <div className="w-full max-sm border border-[#00f2ff]/20 p-8 bg-black">
+           <div className="w-full max-w-sm border border-[#00f2ff]/20 p-8 bg-black">
               <h2 className="text-xl font-black italic uppercase mb-8">管理员登录</h2>
               <form onSubmit={handleLogin}>
                 <input 
-                  type="password" autoFocus placeholder="Password"
+                  type="password" autoFocus placeholder="默认密码: admin"
                   className="w-full bg-transparent border-b border-white/20 py-4 text-2xl outline-none mb-8 focus:border-[#00f2ff]"
                   value={passwordInput} onChange={e => setPasswordInput(e.target.value)}
                 />
