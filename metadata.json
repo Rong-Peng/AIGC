@@ -1,0 +1,8 @@
+{
+  "name": "AIGC Creative Portfolio",
+  "description": "A professional-grade portfolio application for showcasing AI-generated images and videos, featuring AI-assisted description polishing.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
