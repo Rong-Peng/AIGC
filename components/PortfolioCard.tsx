@@ -15,9 +15,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ work, onClick }) =
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
+        if (entry.isIntersecting) setIsVisible(true);
       },
       { threshold: 0.1 }
     );
@@ -38,9 +36,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ work, onClick }) =
     setRotate({ x: rotateX, y: rotateY });
   };
 
-  const handleMouseLeave = () => {
-    setRotate({ x: 0, y: 0 });
-  };
+  const handleMouseLeave = () => setRotate({ x: 0, y: 0 });
 
   return (
     <div 
@@ -53,7 +49,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ work, onClick }) =
         transform: `perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
       }}
     >
-      <div className="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10 group-hover:border-[#00f2ff]/40 group-active:border-[#00f2ff]/80 transition-all duration-300 rounded-br-[40px] md:rounded-br-[60px]"></div>
+      <div className="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10 group-hover:border-[#00f2ff]/40 transition-all duration-300 rounded-br-[40px] md:rounded-br-[60px]"></div>
       
       <div className="relative p-0.5">
         <div className="aspect-[4/5] overflow-hidden rounded-sm mb-4 md:mb-6 relative bg-black/40">
@@ -62,38 +58,41 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ work, onClick }) =
               src={work.mediaUrl} 
               alt={work.title} 
               loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 group-active:scale-95"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
-            <video 
-              src={work.mediaUrl} 
-              poster={work.coverUrl}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              muted loop playsInline
-              autoPlay
-            />
+            <div className="w-full h-full relative">
+               {/* 视频处理：非 B站视频可自动预览，B站视频仅展示纯黑或占位 */}
+               {work.mediaUrl.includes('bilibili.com') || work.mediaUrl.includes('BV') ? (
+                 <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-white/20">
+                    <span className="text-[10px] font-black uppercase tracking-widest italic">Video Link</span>
+                 </div>
+               ) : (
+                 <video 
+                   src={work.mediaUrl} 
+                   className="w-full h-full object-cover"
+                   muted loop playsInline autoPlay
+                 />
+               )}
+            </div>
           )}
           
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/95 to-transparent">
              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[8px] md:text-[10px] font-bold tracking-[0.2em] text-[#00f2ff] uppercase opacity-80">节点 {work.id.slice(-4)}</span>
-                {work.mediaType === 'video' && <span className="bg-[#7000ff]/80 text-[7px] px-1 font-black rounded-sm">动态</span>}
+                <span className="text-[8px] font-bold tracking-[0.2em] text-[#00f2ff] uppercase opacity-80">NODE_{work.id.slice(-4)}</span>
              </div>
-             <h3 className="text-lg md:text-xl font-black italic tracking-tighter uppercase leading-tight group-active:text-glow transition-all">{work.title}</h3>
+             <h3 className="text-lg md:text-xl font-black italic tracking-tighter uppercase group-hover:text-[#00f2ff] transition-colors">{work.title}</h3>
           </div>
         </div>
         
         <div className="px-4 pb-6 md:pb-8">
-           <p className="text-gray-400 text-[11px] md:text-xs leading-relaxed mb-4 line-clamp-2 font-light">
+           <p className="text-gray-400 text-[11px] leading-relaxed mb-4 line-clamp-2 font-light">
              {work.description}
            </p>
-           <div className="flex justify-between items-center">
-              <div className="flex gap-1.5 md:gap-2">
-                 {work.tools.slice(0, 2).map(t => (
-                   <span key={t} className="text-[8px] md:text-[9px] font-mono text-white/30 border border-white/5 px-1.5 py-0.5">{t}</span>
-                 ))}
-              </div>
-              <div className="w-6 h-[1px] bg-white/10 group-hover:w-10 group-hover:bg-[#00f2ff] group-active:bg-[#00f2ff] transition-all duration-300"></div>
+           <div className="flex flex-wrap gap-1.5">
+              {work.tools.slice(0, 3).map(t => (
+                <span key={t} className="text-[8px] font-mono text-white/20 border border-white/5 px-1.5 py-0.5 uppercase">{t}</span>
+              ))}
            </div>
         </div>
       </div>
