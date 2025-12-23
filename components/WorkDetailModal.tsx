@@ -39,6 +39,17 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
 
   if (!work) return null;
 
+  // 识别 B站链接并提取 BV 号
+  const getBilibiliEmbedUrl = (url: string) => {
+    const bvMatch = url.match(/BV[a-zA-Z0-9]+/i);
+    if (bvMatch) {
+      return `//player.bilibili.com/player.html?bvid=${bvMatch[0]}&page=1&high_quality=1&danmaku=0`;
+    }
+    return null;
+  };
+
+  const bvidUrl = work.mediaType === 'video' ? getBilibiliEmbedUrl(work.mediaUrl) : null;
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/98 p-0 md:p-10 animate-in fade-in duration-700">
       <div className="bg-[#050505] w-full h-full max-w-[1920px] relative flex flex-col lg:flex-row overflow-hidden border border-white/5">
@@ -50,14 +61,29 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
         </button>
 
         {/* 媒体展示区 */}
-        <div className="lg:w-3/5 h-1/2 lg:h-full bg-black relative flex items-center justify-center p-6 md:p-10">
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="lg:w-3/5 h-1/2 lg:h-full bg-black relative flex items-center justify-center p-4 md:p-10">
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:40px_40px]"></div>
           </div>
+          
           {work.mediaType === 'image' ? (
-            <img src={work.mediaUrl} alt={work.title} className="max-h-full max-w-full object-contain shadow-[0_0_100px_rgba(255,242,0,0.05)]" />
+            <img src={work.mediaUrl} alt={work.title} className="max-h-full max-w-full object-contain shadow-[0_0_100px_rgba(0,242,255,0.05)]" />
           ) : (
-            <video src={work.mediaUrl} className="max-h-full max-w-full" controls autoPlay loop playsInline />
+            bvidUrl ? (
+              <div className="w-full aspect-video max-w-4xl shadow-2xl border border-white/5">
+                <iframe 
+                  src={bvidUrl} 
+                  className="w-full h-full"
+                  scrolling="no" 
+                  border="0" 
+                  frameBorder="no" 
+                  framespacing="0" 
+                  allowFullScreen={true}
+                ></iframe>
+              </div>
+            ) : (
+              <video src={work.mediaUrl} className="max-h-full max-w-full" controls autoPlay loop playsInline />
+            )
           )}
         </div>
 
@@ -93,7 +119,7 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
                 <section className="bg-white/5 p-6 md:p-10 border-l-2 border-[#00f2ff]">
                    <div className="flex items-center gap-3 mb-6">
                       <div className="w-2 h-2 bg-[#00f2ff] rounded-full animate-ping"></div>
-                      <span className="text-[10px] font-black text-[#00f2ff] uppercase tracking-widest">AI 创作洞察 (已解密)</span>
+                      <span className="text-[10px] font-black text-[#00f2ff] uppercase tracking-widest">AI 创作洞察</span>
                    </div>
                    {loading ? (
                      <div className="space-y-2 opacity-20">
@@ -101,7 +127,7 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
                         <div className="h-2 bg-white w-2/3 animate-pulse"></div>
                      </div>
                    ) : (
-                     <p className="text-sm font-mono text-blue-100/70 leading-relaxed leading-7">
+                     <p className="text-sm font-mono text-blue-100/70 leading-relaxed">
                        {displayText}
                        <span className="inline-block w-2 h-4 bg-[#00f2ff] ml-1 animate-pulse"></span>
                      </p>
@@ -110,18 +136,18 @@ export const WorkDetailModal: React.FC<WorkDetailModalProps> = ({ work, onClose,
              </div>
 
              {onDelete && onEdit && (
-                <div className="mt-12 md:mt-20 flex items-center gap-8">
+                <div className="mt-12 md:mt-20 flex items-center gap-8 border-t border-white/5 pt-8">
                    <button 
                      onClick={() => onEdit(work)}
                      className="text-[#00f2ff] text-[10px] font-black uppercase tracking-[0.5em] transition-colors hover:text-white"
                    >
-                     编辑作品记录
+                     编辑
                    </button>
                    <button 
-                     onClick={() => { if(confirm('确认彻底删除该作品记录？(TERMINATE_DATA_ENTRY)')) { onDelete(work.id); onClose(); } }}
+                     onClick={() => { if(confirm('确认彻底删除？')) { onDelete(work.id); onClose(); } }}
                      className="text-red-500/30 hover:text-red-500 text-[10px] font-black uppercase tracking-[0.5em] transition-colors"
                    >
-                     删除作品记录
+                     删除
                    </button>
                 </div>
              )}

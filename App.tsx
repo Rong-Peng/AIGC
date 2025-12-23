@@ -40,22 +40,16 @@ const App: React.FC = () => {
       try {
         const allWorksMap = new Map<string, PortfolioWork>();
         
-        // 1. 加载代码内置的预设作品 (Fallback)
         PRESET_WORKS.forEach(w => allWorksMap.set(w.id, w));
 
-        // 2. 尝试抓取仓库中的 portfolio.json (方案1：全网同步核心)
         try {
           const response = await fetch('./portfolio.json');
           if (response.ok) {
             const remoteData: PortfolioWork[] = await response.json();
             remoteData.forEach(w => allWorksMap.set(w.id, w));
-            console.log("已同步远程作品集数据");
           }
-        } catch (e) {
-          console.warn("未检测到外部 portfolio.json 或读取失败，将使用内置及本地数据");
-        }
+        } catch (e) {}
 
-        // 3. 加载浏览器本地数据库中的作品 (当前正在编辑的)
         const localData = await getAllWorksFromDB();
         localData.forEach(w => allWorksMap.set(w.id, w));
         
@@ -64,7 +58,7 @@ const App: React.FC = () => {
           
         setWorks(combined);
       } catch (err) {
-        console.error("数据加载流程异常:", err);
+        console.error("加载异常:", err);
       } finally {
         setIsLoading(false);
       }
@@ -89,11 +83,9 @@ const App: React.FC = () => {
         }
         return [work, ...prev];
       });
-      if (selectedWork?.id === work.id) {
-        setSelectedWork(work);
-      }
+      if (selectedWork?.id === work.id) setSelectedWork(work);
     } catch (err) {
-      alert("数据持久化失败");
+      alert("保存失败");
     }
   };
 
@@ -125,41 +117,18 @@ const App: React.FC = () => {
       setShowLogin(false);
       setPasswordInput("");
     } else { 
-      alert("密码错误 / 访问被拒绝"); 
-    }
-  };
-
-  const logout = () => {
-    setIsAdmin(false);
-    localStorage.removeItem('ultra_portfolio_admin');
-  };
-
-  const startLongPress = () => {
-    longPressTimer.current = window.setTimeout(() => {
-      setShowLogin(true);
-    }, 2000);
-  };
-
-  const cancelLongPress = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
+      alert("密码错误"); 
     }
   };
 
   const filteredWorks = works.filter(w => filter === 'all' || w.mediaType === filter);
-
-  const filterMap = {
-    all: "全部作品",
-    image: "静态图像",
-    video: "动态视频"
-  };
 
   return (
     <div className="min-h-screen relative flex flex-col bg-[#050505]">
       <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-10 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
         <div className="flex items-center gap-3">
            <div className="w-8 md:w-12 h-0.5 bg-white shadow-[0_0_10px_white]"></div>
-           <span className="font-black text-xl md:text-2xl tracking-tighter italic">NC.实验室</span>
+           <span className="font-black text-xl md:text-2xl tracking-tighter italic uppercase">Neural Canvas</span>
         </div>
         
         <div className="flex items-center gap-4">
@@ -167,155 +136,88 @@ const App: React.FC = () => {
             <div className="flex gap-2">
               <button 
                 onClick={handleExport}
-                className="text-[10px] font-black text-[#00f2ff] border border-[#00f2ff]/30 tracking-widest px-4 py-1.5 rounded-sm hover:bg-[#00f2ff]/10 transition-all flex items-center gap-2"
+                className="text-[10px] font-black text-[#00f2ff] border border-[#00f2ff]/30 tracking-widest px-4 py-1.5 rounded-sm hover:bg-[#00f2ff]/10"
               >
-                <span className="animate-pulse">●</span> 同步全网
+                生成同步文件
               </button>
               <button 
                 onClick={() => setIsUploadOpen(true)} 
-                className="text-[10px] font-black text-black bg-[#00f2ff] tracking-widest px-4 py-1.5 rounded-sm shadow-[0_0_15px_rgba(0,242,255,0.4)] transition-transform active:scale-90"
+                className="text-[10px] font-black text-black bg-[#00f2ff] tracking-widest px-4 py-1.5 rounded-sm"
               >
-                添加新作品
+                + 添加
               </button>
             </div>
           )}
           <div 
-            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 border border-white/10 p-0.5 rounded-sm overflow-hidden active:opacity-50 transition-opacity cursor-pointer"
-            onClick={() => isAdmin ? logout() : setShowLogin(true)}
-            title={isAdmin ? "退出管理模式" : "登录管理员"}
+            className="w-10 h-10 md:w-12 md:h-12 bg-white/5 border border-white/10 p-0.5 rounded-sm overflow-hidden cursor-pointer"
+            onClick={() => isAdmin ? (setIsAdmin(false), localStorage.removeItem('ultra_portfolio_admin')) : setShowLogin(true)}
           >
-            <img src={profile.avatar} className={`w-full h-full object-cover ${isAdmin ? 'opacity-100' : 'opacity-40'}`} />
+            <img src={profile.avatar} className={`w-full h-full object-cover ${isAdmin ? 'opacity-100' : 'opacity-30'}`} />
           </div>
         </div>
       </nav>
 
       <main className="flex-grow pt-32 pb-20 px-6 md:px-10 max-w-[1800px] mx-auto w-full">
-        <section className="mb-24 md:mb-40">
-           <div style={{ transform: `translateY(${scrollY * -0.1}px)` }} className="transition-transform duration-75">
-              <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
-                <div className="inline-block px-3 py-1 border border-[#7000ff]/30 bg-[#7000ff]/5 text-[#7000ff] text-[8px] md:text-[10px] font-bold tracking-[0.4em] uppercase">
-                  当前状态: {isAdmin ? '管理员模式' : '公共访问模式'}
-                </div>
-                <div className="flex items-center gap-2 text-[8px] text-gray-500 font-mono">
-                  <span className={`w-1.5 h-1.5 rounded-full ${isAdmin ? 'bg-green-500' : 'bg-blue-500'} animate-pulse`}></span>
-                  核心引擎: {isAdmin ? 'RW_NODE (读写节点)' : 'RO_NODE (展示节点)'}
-                </div>
-              </div>
-              <h1 
-                className="text-[18vw] md:text-[10vw] font-black leading-[0.85] tracking-tighter uppercase italic select-none mb-10 cursor-pointer"
-                onDoubleClick={() => setShowLogin(true)}
-                onTouchStart={startLongPress}
-                onTouchEnd={cancelLongPress}
-              >
-                智感 <br />
-                <span className="text-white/20">画布</span>
-              </h1>
-              <p className="text-base md:text-xl text-gray-400 font-light leading-relaxed max-w-lg border-l border-white/10 pl-6 mb-12">
-                {profile.bio}
-              </p>
-           </div>
+        <section className="mb-20 md:mb-32">
+          <h1 className="text-[15vw] md:text-[8vw] font-black leading-[0.85] tracking-tighter uppercase italic mb-10">
+            智感 <br /> <span className="text-white/20">策展</span>
+          </h1>
+          <p className="text-sm md:text-lg text-gray-400 font-light leading-relaxed max-w-lg border-l border-white/10 pl-6">
+            {profile.bio}
+          </p>
         </section>
 
-        <div className="flex items-center gap-8 md:gap-12 mb-12 md:mb-20 overflow-x-auto no-scrollbar pb-4 sticky top-24 z-40 bg-[#050505]/80 backdrop-blur-md -mx-6 px-6">
+        <div className="flex items-center gap-8 mb-12 md:mb-20 sticky top-24 z-40 bg-[#050505]/80 backdrop-blur-md py-4">
           {(['all', 'image', 'video'] as const).map((type) => (
             <button
               key={type}
               onClick={() => setFilter(type)}
-              className={`text-[10px] md:text-[11px] font-bold uppercase tracking-[0.4em] transition-all relative whitespace-nowrap ${filter === type ? 'text-[#00f2ff]' : 'text-gray-600'}`}
+              className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all relative ${filter === type ? 'text-[#00f2ff]' : 'text-gray-600'}`}
             >
-              {filterMap[type]}
-              {filter === type && <div className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#00f2ff] shadow-[0_0_10px_#00f2ff]"></div>}
+              {type === 'all' ? '全部' : type === 'image' ? '图像' : '视频'}
+              {filter === type && <div className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#00f2ff]"></div>}
             </button>
           ))}
         </div>
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-40 opacity-20">
-             <div className="w-12 h-12 border-2 border-[#00f2ff] border-t-transparent rounded-full animate-spin mb-6"></div>
-             <div className="text-[10px] font-black tracking-[0.5em] uppercase">正在同步神经元数据...</div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10">
-            {filteredWorks.length > 0 ? (
-              filteredWorks.map((work) => (
-                <PortfolioCard key={work.id} work={work} onClick={setSelectedWork} />
-              ))
-            ) : (
-              <div className="col-span-full py-20 border border-dashed border-white/10 flex flex-col items-center justify-center opacity-30">
-                 <div className="text-[10px] font-bold tracking-[0.5em] uppercase mb-4">未检测到任何作品记录</div>
-                 {isAdmin && <button onClick={() => setIsUploadOpen(true)} className="text-[#00f2ff] text-xs underline">初始化首个作品上传</button>}
-              </div>
-            )}
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10">
+          {filteredWorks.map((work) => (
+            <PortfolioCard key={work.id} work={work} onClick={setSelectedWork} />
+          ))}
+        </div>
       </main>
 
       {showSyncGuide && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
-           <div className="w-full max-w-2xl border border-[#00f2ff]/30 p-8 md:p-12 bg-[#0a0a0a] relative shadow-[0_0_100px_rgba(0,242,255,0.15)]">
-              <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-6 text-[#00f2ff]">同步操作指引 (SYNC_LOG)</h2>
-              <div className="space-y-6 text-gray-300 font-light leading-relaxed text-sm md:text-base mb-10">
-                <div className="p-4 bg-white/5 border-l-2 border-white/20">
-                  <p className="text-xs font-mono text-gray-500 mb-2">STEP_01</p>
-                  <p>将刚下载的 <code className="text-[#00f2ff]">portfolio.json</code> 放置在你的项目根目录中。</p>
-                </div>
-                <div className="p-4 bg-white/5 border-l-2 border-white/20">
-                  <p className="text-xs font-mono text-gray-500 mb-2">STEP_02</p>
-                  <p>提交该文件变更并重新推送代码（GitHub Push 或 Vercel Deploy）。</p>
-                </div>
-                <div className="p-4 bg-[#00f2ff]/5 border-l-2 border-[#00f2ff]">
-                  <p className="text-xs font-mono text-[#00f2ff] mb-2">DONE</p>
-                  <p>部署完成后，所有人访问该链接都能看到你刚刚发布的媒体作品。</p>
-                </div>
+           <div className="w-full max-w-2xl border border-[#00f2ff]/30 p-8 md:p-12 bg-[#0a0a0a]">
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-6 text-[#00f2ff]">全网同步成功第一步</h2>
+              <div className="space-y-4 text-gray-300 text-sm mb-10">
+                <p>1. 刚才下载的 <code className="text-[#00f2ff]">portfolio.json</code> 已经包含了你的所有作品数据（包括 B站链接）。</p>
+                <p>2. 把这个文件放到你代码根目录下。</p>
+                <p>3. <span className="text-white font-bold">关于本地图片：</span> 如果你在 URL 里填的是 <code className="bg-white/10 px-1 italic">./assets/01.jpg</code>，请确保你手动创建了 <code className="text-[#00f2ff]">assets</code> 文件夹，并把对应的图片放进去。</p>
+                <p>4. 重新提交代码并部署，面试官就能飞速流畅地看你的作品集了！</p>
               </div>
               <button 
                 onClick={() => setShowSyncGuide(false)}
-                className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-[#00f2ff] transition-colors"
+                className="w-full py-4 bg-white text-black font-black uppercase text-xs hover:bg-[#00f2ff]"
               >
-                确认并继续
+                好的
               </button>
            </div>
         </div>
       )}
 
-      <footer className="p-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-         <div className="text-[10px] font-mono text-gray-600 tracking-widest flex items-center gap-4">
-           <span>© 2024 智感画布 (NEURAL_CANVAS)</span>
-           <button 
-             onClick={() => setShowLogin(true)} 
-             className="opacity-10 hover:opacity-100 transition-opacity cursor-help"
-           >
-             [系统控制台]
-           </button>
-         </div>
-         <div className="flex gap-8">
-            <span className="text-[10px] font-bold text-white/10 uppercase italic">架构方案: DATA_HYBRID (JSON + INDEXED_DB)</span>
-         </div>
-      </footer>
-
       {showLogin && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl animate-in fade-in zoom-in duration-300">
-           <div className="w-full max-sm border border-[#00f2ff]/20 p-8 bg-black relative shadow-[0_0_50px_rgba(0,242,255,0.1)]">
-              <button 
-                onClick={() => setShowLogin(false)}
-                className="absolute top-4 right-4 text-gray-600 hover:text-white text-2xl"
-              >
-                &times;
-              </button>
-              <div className="text-[#00f2ff] font-mono text-[10px] mb-4 animate-pulse">&gt;&gt;&gt; 身份认证序列已初始化...</div>
-              <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8">管理员登录</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
+           <div className="w-full max-sm border border-[#00f2ff]/20 p-8 bg-black">
+              <h2 className="text-xl font-black italic uppercase mb-8">管理员登录</h2>
               <form onSubmit={handleLogin}>
                 <input 
-                  type="password" autoFocus
-                  placeholder="输入访问代码"
-                  className="w-full bg-transparent border-b border-white/20 py-4 text-2xl font-mono tracking-widest outline-none mb-8 focus:border-[#00f2ff] transition-colors"
-                  value={passwordInput}
-                  onChange={e => setPasswordInput(e.target.value)}
+                  type="password" autoFocus placeholder="Password"
+                  className="w-full bg-transparent border-b border-white/20 py-4 text-2xl outline-none mb-8 focus:border-[#00f2ff]"
+                  value={passwordInput} onChange={e => setPasswordInput(e.target.value)}
                 />
-                <div className="flex justify-between items-center">
-                   <button type="button" onClick={() => setShowLogin(false)} className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-white">取消</button>
-                   <button type="submit" className="bg-[#00f2ff] text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform">验证</button>
-                </div>
+                <button type="submit" className="w-full bg-[#00f2ff] text-black py-3 text-xs font-black uppercase tracking-widest">验证</button>
               </form>
            </div>
         </div>
