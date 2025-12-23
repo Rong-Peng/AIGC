@@ -7,7 +7,7 @@ const getAI = () => {
   return new GoogleGenAI({ apiKey });
 };
 
-export const polishDescription = async (title: string, roughDescription: string, _prompt?: string) => {
+export const polishDescription = async (title: string, roughDescription: string) => {
   try {
     const ai = getAI();
     if (!ai) return roughDescription;
@@ -17,7 +17,7 @@ export const polishDescription = async (title: string, roughDescription: string,
       contents: `你是一位专业的内容策展人。请优化以下 AIGC 作品的描述，使其更适合放在求职作品集中。
       
       标题：${title}
-      原始描述：${roughDescription}
+      描述：${roughDescription}
 
       要求：语言专业、简洁，重点突出创意愿景。请直接返回优化后的中文文本。`,
       config: { temperature: 0.7 }
