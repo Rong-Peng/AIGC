@@ -40,13 +40,13 @@ const App: React.FC = () => {
 
         // 2. 加载外部 JSON 文件 (增加时间戳防止缓存)
         try {
-          const response = await fetch(`./portfolio.json?v=${Date.now()}`);
+          const response = await fetch(`/portfolio.json?v=${Date.now()}`);
           if (response.ok) {
             const remoteData: PortfolioWork[] = await response.json();
             remoteData.forEach(w => allWorksMap.set(w.id, w));
           }
         } catch (e) {
-          console.warn("未找到 portfolio.json 或解析失败");
+          console.warn("未找到 portfolio.json 或解析失败", e);
         }
 
         // 3. 加载本地 IndexedDB (管理员浏览器特有)
