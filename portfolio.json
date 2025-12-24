@@ -5,7 +5,7 @@
     "title": "美丽包包",
     "description": "电商包包",
     "mediaType": "image",
-    "mediaUrl": "./assets/photos/bb.png",
+    "mediaUrl": "/photos/bb.png",
     "tools": [
       "gemini"
     ],
@@ -16,7 +16,7 @@
     "title": "风景不在取景框里",
     "description": "在一个被像素精准定义的时代，我们习惯了在 6.1 英寸的屏幕里环游世界。本作以“数字时代的身体力行”为核心命题，探讨了一个悖论：如果风景早已在别人的镜头里完美定格，我们为何还要亲自出发？",
     "mediaType": "video",
-    "mediaUrl": "./assets/video/fj.mp4",
+    "mediaUrl": "/video/fj.mp4",
     "tools": [
       "即梦，Runway，海螺"
     ],
@@ -27,7 +27,7 @@
     "title": "相思红豆",
     "description": "本作是对经典国产动画《相思》的 AI 致敬与重构。影片核心围绕“红豆”这一文化图腾，捕捉了成年后的错位遗憾与童年时的青梅竹马。通过 AI 生成技术，我试图还原那种“哀而不伤”的东方审美：雨中的清冷基调与回忆中的暖阳色泽形成强烈对比，每一帧都浸透了文人笔下的思念。",
     "mediaType": "video",
-    "mediaUrl": "./assets/video/yearning.mp4",
+    "mediaUrl": "video/yearning.mp4",
     "tools": [
       "即梦，Runway，海螺,sore"
     ],
@@ -38,7 +38,7 @@
     "title": "首饰包",
     "description": "动态展示功能",
     "mediaType": "video",
-    "mediaUrl": "./assets/video/sj.mp4",
+    "mediaUrl": "/video/sj.mp4",
     "tools": [
       "sore"
     ],
