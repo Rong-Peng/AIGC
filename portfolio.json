@@ -27,7 +27,7 @@
     "title": "相思红豆",
     "description": "本作是对经典国产动画《相思》的 AI 致敬与重构。影片核心围绕“红豆”这一文化图腾，捕捉了成年后的错位遗憾与童年时的青梅竹马。通过 AI 生成技术，我试图还原那种“哀而不伤”的东方审美：雨中的清冷基调与回忆中的暖阳色泽形成强烈对比，每一帧都浸透了文人笔下的思念。",
     "mediaType": "video",
-    "mediaUrl": "video/yearning.mp4",
+    "mediaUrl": "/video/yearning.mp4",
     "tools": [
       "即梦，Runway，海螺,sore"
     ],
